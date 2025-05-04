@@ -1,0 +1,195 @@
+---
+title: "EEOB5460_blastn"
+output: html_document
+date: "2025-05-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# libraries
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(reshape2)
+
+# set wd
+getwd() # ensure working directory contains folder containing blastn output files
+```
+
+
+```{r}
+# read - in og blastn output files
+w1_og_blastn <- read.table("working_files/wuhan1_blastn_hits.txt", header = FALSE)
+w2_og_blastn <- read.table("working_files/wuhan2_blastn_hits.txt", header = FALSE)
+
+# adding column names
+newnames <- c("qseqid", "sseqid", "pident", "length", "mismatch", "gapopen", "qstart", "qend", "sstart", "send", "evalue", "bitscore")
+
+colnames(w1_og_blastn) <- newnames
+colnames(w2_og_blastn) <- newnames
+
+# read - in edited blastn output files (w/ taxnomic lineage)
+w1_blastn_tax <- read.table("working_files/wuhan1_blast_with_lineage.txt", sep = "\t", header = TRUE)
+w2_blastn_tax <- read.table("working_files/wuhan2_blast_with_lineage.txt", sep = "\t", header = TRUE)
+
+# separating lineage column into multiple columns
+w1_blastn_tax <- w1_blastn_tax %>%
+  separate(lineage, into = c("genome_ref", "realm", "kingdom", "phylum", 
+                             "class", "order", "suborder", "family", 
+                             "subfamily", "genus", "subgenus", "species", "strain"),
+           sep = " > ", fill = "right", remove = FALSE)
+
+w2_blastn_tax <- w2_blastn_tax %>%
+  separate(lineage, into = c("genome_ref", "realm", "kingdom", "phylum", 
+                             "class", "order", "suborder", "family", 
+                             "subfamily", "genus", "subgenus", "species", "strain"),
+           sep = " > ", fill = "right", remove = FALSE)
+```
+## Histogram of % Identity
+
+conceptual purpose
+
+* shows the distribution of how similar the query sequences are to the reference sequences in the database
+* assesses quality of alignments [high pident value suggest very similar or exact matches]
+* broader/lower distribution might indicate distant homology, potential misalignment, or contamination
+
+```{r}
+# wuhan 1
+percent_id_w1 <- ggplot(w1_blastn_tax, aes(x = pident)) +
+  geom_histogram(binwidth = 1, fill = "#69b3a2", color = "black") +
+  labs(
+    title = "% Identity Distribution", 
+    x = "Percent Identity", 
+    y = "Count"
+  ) +
+  theme_minimal()
+
+# wuhan 2
+percent_id_w2 <-ggplot(w2_blastn_tax, aes(x = pident)) +
+  geom_histogram(binwidth = 1, fill = "#69b3a2", color = "black") +
+  labs(
+    title = "% Identity Distribution", 
+    x = "Percent Identity", 
+    y = "Count"
+  ) +
+  theme_minimal()
+
+
+ggsave("output_files/figures/percent_id_w1.png", plot = percent_id_w1)
+ggsave("output_files/figures/percent_id_w2.png", plot = percent_id_w2)
+```
+
+
+## Histogram of Alignment Length
+
+conceptual purpose: 
+
+* displays how long the matching regions are between the query and subject sequences
+* longer alignments indicate more biologically meaningful matches
+* very short alignments (bp <50) may be uninformative
+* helps determine if the df has full-length hits, partial matches, or fragmented sequences
+
+```{r}
+# wuhan 1
+aln_len_w1 <- ggplot(w1_blastn_tax, aes(x = length)) +
+  geom_histogram(binwidth = 10, fill = "#4682b4", color = "black") +
+  labs(
+    title = "Alignment Length Distribution", 
+    x = "Alignment Length", 
+    y = "Count") +
+  theme_minimal()
+
+# wuhan 2
+aln_len_w2 <- ggplot(w2_blastn_tax, aes(x = length)) +
+  geom_histogram(binwidth = 10, fill = "#4682b4", color = "black") +
+  labs(
+    title = "Alignment Length Distribution", 
+    x = "Alignment Length", 
+    y = "Count") +
+  theme_minimal()
+
+ggsave("output_files/figures/aln_len_w1.png", plot = aln_len_w1)
+ggsave("output_files/figures/aln_len_w2.png", plot = aln_len_w2)
+```
+
+
+## Scatterplot of Bitscore vs. E-value (log scale)
+
+conceptual purpose:
+
+* visualizes the quality vs. statistical significance of alignments
+* high bitscore and low e-value suggest strong, highly significant matches
+* outliers (e.g. high bitscore, high E-value)
+* the log scale on e-value emphasizes rare and meaningful hits
+
+NOTE: when running blastn, e-value metric was set to 1e-05
+
+conclusion: 
+
+* most points fall tightly along this line, it indicates consistent and high-quality alignments
+  * "BLAST calculates E-value from the Bitscore using a formula that involves the length of the database and a statistical model. On a log scale for E-value, this relationship is often nearly linear"
+```{r}
+# wuhan 1
+bit_v_e_w1 <- ggplot(w1_blastn_tax, aes(x = bitscore, y = evalue)) +
+  geom_point(alpha = 0.6) +
+  scale_y_log10() +
+  labs(
+    title = "Bitscore vs E-value", 
+    x = "Bitscore", 
+    y = "E-value (log scale)") +
+  theme_minimal()
+
+# wuhan 2
+bit_v_e_w2 <- ggplot(w2_blastn_tax, aes(x = bitscore, y = evalue)) +
+  geom_point(alpha = 0.6) +
+  scale_y_log10() +
+  labs(
+    title = "Bitscore vs E-value", 
+    x = "Bitscore", 
+    y = "E-value (log scale)") +
+  theme_minimal()
+
+ggsave("output_files/figures/bit_v_e_w1.png", plot = bit_v_e_w1)
+ggsave("output_files/figures/bit_v_e_w2.png", plot = bit_v_e_w2)
+```
+
+## Barplot of Top 5 Viral Strains
+
+conceptual purpose: 
+
+* identifies which major viral strains are present in samples
+```{r,fig.width=8,fig.height=4}
+# wuhan 1
+top_strains_w1 <- w1_blastn_tax %>%
+  filter(!is.na(strain)) %>%
+  count(strain, sort = TRUE) %>%
+  slice_head(n = 5) %>%
+  ggplot(aes(x = reorder(strain, n), y = n)) +
+  geom_col(fill = "#4682b4") +
+  coord_flip() +
+  labs(
+    title = "Top 5 Viral Strains in BLAST Hits", 
+    x = "Viral Strain", 
+    y = "Count") +
+  theme_minimal()
+
+# wuhan 2
+top_strains_w2 <- w2_blastn_tax %>%
+  filter(!is.na(strain)) %>%
+  count(strain, sort = TRUE) %>%
+  slice_head(n = 5) %>%
+  ggplot(aes(x= reorder(strain, n), y = n)) +
+  geom_col(fill = "#4682b4") +
+  coord_flip() +
+  labs(
+    title = "Top 5 Viral Strains in BLAST Hits", 
+    x = "Viral Strain", 
+    y = "Count") +
+  theme_minimal()
+
+ggsave("output_files/figures/top_strains_w1.png", plot = top_strains_w1)
+ggsave("output_files/figures/top_strains_w2.png", plot = top_strains_w2)
+```
