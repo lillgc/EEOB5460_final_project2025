@@ -3,6 +3,8 @@
 # exit on error
 set -e
 
+# make working_files folder
+mkdir working_files 
 
 # quality control w/ fastp
 module load fastp 
