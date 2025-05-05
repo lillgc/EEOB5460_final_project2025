@@ -3,12 +3,12 @@
 # exit on error
 set -e
 
-# make working_files folder
-mkdir working_files 
+# -------------------
 
 # quality control w/ fastp
-module load fastp 
+#module load fastp 
 #micromamba install -c bioconda fastp
+#brew install fastp
 
 # output cleaned fastq files (trimmed adapters) and html/json qc reports
 ## wuhan 1
@@ -23,8 +23,9 @@ fastp -i patient_raw_fastq/SRR10903401_1.fastq -I patient_raw_fastq/SRR10903401_
 
 
 # data prep for blastn (fastq --> fasta)
-module load seqtk
+#module load seqtk
 #micromamba install -c bioconda seqtk # may need to alter if using other conda type (micromamba works in ISU HPC)
+#brew install seqtk
 
 ## wuhan 1
 cat working_files/wuhan1_clean_1.fastq working_files/wuhan1_clean_2.fastq > working_files/wuhan1_merged.fastq
@@ -34,8 +35,9 @@ seqtk seq -a working_files/wuhan1_merged.fastq > working_files/wuhan1_merged.fas
 cat working_files/wuhan2_clean_1.fastq working_files/wuhan2_clean_2.fastq > working_files/wuhan2_merged.fastq
 seqtk seq -a working_files/wuhan2_merged.fastq > working_files/wuhan2_merged.fasta
 
-module load ncbi-rmblastn/2.14.0-py310-vqnew3z
+#module load ncbi-rmblastn/2.14.0-py310-vqnew3z
 # use "module spider blastn" to search for available versions
+#brew install blast
 
 
 # loading blast db
