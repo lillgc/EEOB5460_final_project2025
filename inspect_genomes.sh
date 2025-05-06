@@ -85,12 +85,7 @@ blastn -query working_files/wuhan2_merged.fasta \
 
 
 # -------------------------
-# 4. Assembly using Megabit
-# -------------------------
-
- echo "[2] MEGAHIT"
-   
-megahit -1 wuhan1_merged.fastq -2 wuhan2_merged.fastq -o working_files/megahit_out.fa --min-contig-len 500
+# end of script
 
 
 

@@ -21,3 +21,6 @@ megahit -1 working_files/wuhan1_clean_1.fastq -2 working_files/wuhan1_clean_2.fa
 
 megahit -1 working_files/wuhan2_clean_1.fastq -2 working_files/wuhan2_clean_2.fastq -o working_files/w2_megahit_out.fa --min-contig-len 500
 
+
+# -------------------------
+# end of script
