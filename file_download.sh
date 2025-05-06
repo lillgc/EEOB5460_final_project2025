@@ -3,8 +3,8 @@
 set -euo pipefail
 
 # create directories
-mkdir patient_raw_fastq
-mkdir working_files
+mkdir -p  patient_raw_fastq
+mkdir -p  working_files
 
 # cd to raw data directory
 cd patient_raw_fastq
@@ -28,5 +28,7 @@ for filename in "${!files[@]}"; do
         echo "Failed to download $filename."
     fi
 done
+
+mv viral_ref_genome_output.fasta ../working_files/
 
 echo "All raw data files successfully downloaded."
