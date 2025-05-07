@@ -3,6 +3,17 @@
 # exit on error
 set -e
 
+# -----------------
+# SLURM SCRIPT for HPC
+
+# Copy/paste this job script into a text file and submit with the command:
+#   sbatch thefilename
+# job standard output will go to the file slurm-%j.out (where %j is the job ID)
+#SBATCH --time=00:30:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1  # number of nodes
+#SBATCH --ntasks-per-node=4  # 4 processor core(s) per node
+
+
 # -------------------
 # 1. Micromamba Activation
 # -------------------
@@ -37,27 +48,63 @@ blastn -query working_files/w2_megahit_out.fa/final.contigs.fa \
        -num_threads 8
 
 
-# -------------------------
-# 6. Taxonomic Profiling Prep
-# -------------------------
+# -------------------
+# Extract Top Contig
+# -------------------
 
-# pull accession list
-cut -f2 working_files/wuhan1_blastn_mega_hits.txt | sort | uniq > working_files/mg_accession_w1_list.txt
-cut -f2 working_files/wuhan2_blastn_mega_hits.txt | sort | uniq > working_files/mg_accession_w2_list.txt
+# helper function
+extract_top_virus_contig() {
+  local SAMPLE_DIR="$1"
+  local PATIENT_NUM="$2"
+  local BLAST_RESULT="${SAMPLE_DIR}/wuhan${PATIENT_NUM}_blastn_mega_hits.txt"
+  local CONTIGS="${SAMPLE_DIR}/w${PATIENT_NUM}_megahit_out.fa/final.contigs.fa"
 
-# download db to match accession list to taxonomy id
-wget -P  working_files/ ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gb.accession2taxid.gz
-gunzip -f working_files/nucl_gb.accession2taxid.gz
+  echo "[EXTRACT] Extracting top viral contig for ${SAMPLE_DIR} (Patient ${PATIENT_NUM})"
 
-echo "accession2taxid downloaded"
+  if [ ! -f "$BLAST_RESULT" ]; then
+    echo "[ERROR] $BLAST_RESULT not found!"
+    exit 1
+  fi
 
-# pull taxids for accessionlist
-grep -Ff working_files/mg_accession_w1_list.txt working_files/nucl_gb.accession2taxid > working_files/w1_mg_taxid_map.txt
-grep -Ff working_files/mg_accession_w2_list.txt working_files/nucl_gb.accession2taxid > working_files/w2_mg_taxid_map.txt
+  local TOP_HIT=$(head -n 1 "$BLAST_RESULT" | awk '{print $1}')
+  if [ -z "$TOP_HIT" ]; then
+    echo "[ERROR] No top hit found in $BLAST_RESULT"
+    exit 1
+  fi
 
-# filter for only taxids
-cut -f3 working_files/w1_mg_taxid_map.txt | sort | uniq > working_files/w1_mg_taxids.txt
-cut -f3 working_files/w2_mg_taxid_map.txt | sort | uniq > working_files/w2_mg_taxids.txt
+  samtools faidx "$CONTIGS" "$TOP_HIT" > "${SAMPLE_DIR}/w${PATIENT_NUM}_top_contig.fasta" || {
+    echo "[ERROR] Failed to extract contig $TOP_HIT"
+    exit 1
+  }
+
+  echo "Extracted to ${SAMPLE_DIR}/w${PATIENT_NUM}_top_contig.fasta"
+}
+
+extract_top_virus_contig "working_files" "1"
+extract_top_virus_contig "working_files" "2"
+
+
+# -------------------
+# Mapping & Consensus
+# -------------------
+echo "[9] Mapping & Consensus"
+
+cd working_files/
+bowtie2-build viral_ref_genome_output.fasta virus_index
+bowtie2 -x virus_index -1 wuhan1_clean_1.fastq -2 wuhan1_clean_2.fastq -S w1_virus_mapped.sam
+samtools view -bS w1_virus_mapped.sam | samtools sort -o w1_virus_mapped_sorted.bam
+samtools index w1_virus_mapped_sorted.bam
+bcftools mpileup -f viral_ref_genome_output.fasta w1_virus_mapped_sorted.bam | bcftools call -mv -Oz -o w1_variants.vcf.gz
+bcftools index w1_variants.vcf.gz 
+cd ..
+
+
+echo "wuhan1 complete"
+
+
+
+
+
 
 
 
