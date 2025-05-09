@@ -3,6 +3,18 @@
 # exit on error
 set -e
 
+
+# -----------------
+# SLURM SCRIPT for HPC
+
+# Copy/paste this job script into a text file and submit with the command:
+#   sbatch thefilename
+# job standard output will go to the file slurm-%j.out (where %j is the job ID)
+#SBATCH --time=00:30:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1  # number of nodes
+#SBATCH --ntasks-per-node=4  # 4 processor core(s) per node
+
+
 # -------------------
 # 1. Micromamba Set Up
 # -------------------
@@ -56,15 +68,6 @@ seqtk seq -a working_files/wuhan2_merged.fastq > working_files/wuhan2_merged.fas
 
 #module load ncbi-rmblastn/2.14.0-py310-vqnew3z
 
-
-# loading blast db
-mkdir working_files/blast_viral_db
-cd working_files/blast_viral_db
-
-wget https://ftp.ncbi.nlm.nih.gov/blast/db/ref_viruses_rep_genomes.tar.gz
-tar -xzvf ref_viruses_rep_genomes.tar.gz
-
-cd ../..
 
 # run blastn (nucleotide search) [takes a couple minutes]
 ## wuhan 1

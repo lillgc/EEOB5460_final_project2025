@@ -29,7 +29,9 @@ micromamba activate mngs_env
 echo "[DOWNLOAD] Downloading reference genomes..."
 mkdir -p fasta_files
 
-curl -L -o fasta_files/WHU_1.fasta "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MN908947.3&rettype=fasta&retmode=text"
+echo "=== Step 2: Download reference genomes from NCBI ==="
+curl -L -o fasta_files/WHU01.fasta "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MN988668.1&rettype=fasta&retmode=text"
+curl -L -o fasta_files/WHU02.fasta "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MN988669.1&rettype=fasta&retmode=text"
 curl -L -o fasta_files/SARS-CoV.fasta "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=AY278741.1&rettype=fasta&retmode=text"
 curl -L -o fasta_files/Bat-SL-CoVZC45.fasta "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MG772933.1&rettype=fasta&retmode=text"
 curl -L -o fasta_files/MERS-CoV.fasta "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=JX869059.2&rettype=fasta&retmode=text"

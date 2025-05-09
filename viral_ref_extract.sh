@@ -15,7 +15,7 @@ module load blast-plus/2.13.0 perl/5.36.0 bzip2/1.0.8
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Step 1: Create and move into the database directory
-DB_DIR="$SCRIPT_DIR/blast_db"
+DB_DIR="$SCRIPT_DIR/../working_files/blast_viral_db"
 mkdir -p "$DB_DIR"
 cd "$DB_DIR"
 

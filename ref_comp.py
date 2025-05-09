@@ -32,8 +32,8 @@ def split_variants(vcf_file, ref_fasta):
     return nonref_variants, ref_variants
 
 # File paths
-vcf1 = "w1_variants.vcf"
-vcf2 = "w2_variants.vcf"
+vcf1 = "working_files/w1_variants.vcf"
+vcf2 = "working_files/w2_variants.vcf"
 
 # Get sets of variants for each VCF
 v1_nonref, v1_ref = split_variants(vcf1, ref)

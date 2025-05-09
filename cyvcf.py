@@ -27,8 +27,8 @@ def extract_maf(vcf_file):
     return maf_dict
 
 # Extract MAF data
-maf1 = extract_maf("w1_variants.vcf")
-maf2 = extract_maf("w2_variants.vcf")
+maf1 = extract_maf("working_files/w1_variants.vcf")
+maf2 = extract_maf("working_files/w2_variants.vcf")
 
 # Shared and unique variants
 keys1, keys2 = set(maf1), set(maf2)

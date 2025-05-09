@@ -59,8 +59,8 @@ def process_vcf(vcf_path, fasta, strain_label):
     return rows
 
 # Process both VCF files
-whu01_variants = process_vcf("w1_variants.vcf", ref, "Viral_ref_genome_output")
-whu02_variants = process_vcf("w2_variants.vcf", ref, "viral_ref_genome_output")
+whu01_variants = process_vcf("working_files/w1_variants.vcf", ref, "Viral_ref_genome_output")
+whu02_variants = process_vcf("working_files/w2_variants.vcf", ref, "viral_ref_genome_output")
 
 # Combine and export
 df = pd.DataFrame(whu01_variants + whu02_variants)

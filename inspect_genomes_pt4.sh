@@ -22,7 +22,6 @@ micromamba activate mngs_env
 
 
 cd working_files/
-bowtie2-build viral_ref_genome_output.fasta virus_index
 bowtie2 -x virus_index -1 wuhan1_clean_1.fastq -2 wuhan1_clean_2.fastq -S w2_virus_mapped.sam
 samtools view -bS w2_virus_mapped.sam | samtools sort -o w2_virus_mapped_sorted.bam
 samtools index w2_virus_mapped_sorted.bam
