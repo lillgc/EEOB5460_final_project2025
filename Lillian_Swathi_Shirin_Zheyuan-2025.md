@@ -43,7 +43,7 @@ This is where our analysis starts along with the creation of the micromamba envi
     We separated the mapping and consensus sequence generation of the two samples into two scripts for ease of use and less usage of memory.
   b. map and generate the bacterial taxonomic profiling as well. Here we generate two report files `wuhan1_kraken.html` and `wuhan2_kraken.html` which will be stored in the `output_files` directory.
   
-5. `tax_step_prep.sh` performs the following step:
+5. `tax_step_prep_b1.sh` performs the following step:
   a. downloading databases, extracting the accession numbers of successful blast hits from the assembled viral genome, and converting the accession numbers to taxonomic ID.
     Since we ran the blastn (we term it Blast search 2 or Blast 2 or b2)search with the cleaned fastq files (before assembling the genome), we performed the preparation step for this blastn results as well.
 
