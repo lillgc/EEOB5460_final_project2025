@@ -19,7 +19,7 @@ We list out the order in which the scripts in the `Scripts` folder should be run
 #### Prep step:
 
 1. We start off by running the script `file_download.sh` which downloads the raw sequencing data of the patients from the European Nucleotide Database (ENA) using the BioProject number (PRJNA601736) mentioned in the paper and saves it under `patients_raw_fastq` folder.
-2. We run 'viral_ref_extract.sh` to download the reference viral database files and convert it into a fasta file for ease of use later.
+2. We run `viral_ref_extract.sh` to download the reference viral database files and convert it into a fasta file for ease of use later.
 
 
 #### Starting of analysis:
